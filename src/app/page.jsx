@@ -232,7 +232,7 @@ export default function Page() {
 
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(hundredth).padStart(2, '0')}`;
   }
-  
+
   function getAssist(board) {
     const solution = solveLightsOut(board);
     const pressableIndices = [];
@@ -278,7 +278,7 @@ export default function Page() {
     <>
       <div className="main-container">
         <div className="header-container">
-          <p className="title">TogL</p>
+          <p className="title">Togle</p>
 
           <AnimatedButton className="reset-button" onClick={() => {
             resetGame();

@@ -1,11 +1,12 @@
 {
-  "name": "togl",
+  "name": "togle",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
@@ -14,6 +15,7 @@
     "framer-motion": "^12.23.24",
     "howler": "^2.2.4",
     "next": "15.5.4",
+    "next-sitemap": "^4.2.3",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   }

@@ -1,21 +1,21 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "TogL - Daily Puzzle Game",
+  title: "Togle - Daily Puzzle Game",
   description:
-    "TogL - a daily puzzle game inspired by Lights Out. Solve today's puzzle, challenge yourself, and share your score with friends!",
-  keywords: ['Togle','Lights Out', 'Daily Puzzle', 'Logic Game', 'TogL', 'Brain Teaser', 'Puzzle Challenge', 'Mind Game', 'Daily Challenge', 'Strategy Game', 'Puzzle Solver', 'Casual Game', 'Addictive Game', 'Puzzle Fun', 'Browser Game', 'Wordle', 'Linear Algebra', 'Matrix Game', 'System of Equations', 'Game Theory',],
+    "Togle - a daily puzzle game inspired by Lights Out. Solve today's puzzle, challenge yourself, and share your score with friends!",
+  keywords: ['Togle','Lights Out', 'Daily Puzzle', 'Logic Game', 'Togle', 'Brain Teaser', 'Puzzle Challenge', 'Mind Game', 'Daily Challenge', 'Strategy Game', 'Puzzle Solver', 'Casual Game', 'Addictive Game', 'Puzzle Fun', 'Browser Game', 'Wordle', 'Linear Algebra', 'Matrix Game', 'System of Equations', 'Game Theory',],
   openGraph: {
-    title: 'TogL - Daily Lights Out Puzzle',
+    title: 'Togle - Daily Lights Out Puzzle',
     description: 'Can you solve today\'s Lights Out puzzle? Challenge yourself with a new daily puzzle and share your score!',
     url: 'https://toglegame.com',
-    siteName: 'TogL',
+    siteName: 'Togle',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'TogL Daily Puzzle Preview',
+        alt: 'Togle Daily Puzzle Preview',
       },
     ],
     locale: 'en_US',
@@ -23,7 +23,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TogL - Daily Puzzle Game",
+    title: "Togle - Daily Puzzle Game",
     description: "Solve today's puzzle and share your score!",
     images: ["/og-image.png"],
   },
