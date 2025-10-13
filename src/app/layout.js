@@ -43,9 +43,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Extra meta tags (like schema.org JSON) can go here if you want */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-
+        <meta name="google-site-verification" content="Hgk3HzXsPQGrhvKtS_dmxOueIybdI6INpBS6hfLXA3g"/>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
