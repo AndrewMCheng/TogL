@@ -8,8 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faRotate, faQuestion } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb } from '@fortawesome/free-regular-svg-icons';
 import { solveLightsOut } from './assist';
-import { GRID_SIZE, AnimatedButton, AnimatedCell, FadeInPanel, FadeOutPanel, AnimatedToggle, AnimatedColorPicker, ResetGame } from './Animations';
-import { Settings, Help } from './Components';
+import { GRID_SIZE, AnimatedButton, AnimatedCell, FadeInPanel, FadeOutPanel, ResetGame } from './Animations';
+import { Settings, Help, Victory } from './Components';
 import { Howl } from 'howler';
 
 const sounds = {
@@ -69,6 +69,8 @@ export default function Page() {
   const [isSettingClosing, setIsSettingClosing] = useState(false);
   const [isHelpClosing, setIsHelpClosing] = useState(false);
   const [animatedCellsReset, setAnimatedCellsReset] = useState([]);
+  const [isDailyAssistLimit, setIsDailyAssistLimit] = useState(false);
+  const [isDailyResetLimit, setIsDailyResetLimit] = useState(false);
 
   function playSound(name) {
     if (sounds[name]) {
@@ -126,11 +128,9 @@ export default function Page() {
   useEffect(() => {
     const today = new Date().toDateString();
     const completedDate = localStorage.getItem('puzzleCompletedDate');
-
     if (completedDate === today) {
       setVictory(true);
     }
-
   }, []);
 
   const handleClick = (index) => {
@@ -249,15 +249,6 @@ export default function Page() {
     return pressableIndices[randomIndex];
   }
 
-  function StatBox(props) {
-    return (
-      <div className="stat-box">
-        <p className="stat-label">{props.label}</p>
-        <p className="stat-value">{props.value}</p>
-      </div>
-    )
-  }
-
   function closeSettings() {
     setIsSettingClosing(true);
     setTimeout(() => {
@@ -278,7 +269,7 @@ export default function Page() {
     <>
       <div className="main-container">
         <div className="header-container">
-          <p className="title">Togle</p>
+          <p className="title">Togl</p>
 
           <AnimatedButton className="reset-button" onClick={() => {
             resetGame();
@@ -356,107 +347,58 @@ export default function Page() {
           ))}
         </div>
 
-        {victory && (
-          <FadeInPanel>
-            <div className="victory-overlay">
-              <div className="victory-box">
-                <p className="victory-title">
-                  You got today's puzzle!
-                  Come back tomorrow for a new one
-                </p>
-                <div
-                  className="grid"
-                  style={{
-                    gridTemplateColumns: `repeat(${GRID_SIZE}, 30px)`,
-                    gridTemplateRows: `repeat(${GRID_SIZE}, 30px)`,
-                    gap: '3px',
-                    justifyContent: 'center'
-                  }}
-                >
-                  {defaultBoard.map((val, index) => (
-                    <div
-                      key={index}
-                      className="victory-cell"
-                      style={{
-                        backgroundColor: val ? '#4CAF50' : '#C0C0C0',
-                        borderRadius: '2.5px'
-                      }}
-                    ></div>
-                  ))}
-                </div>
+        {victory && (() => {
+          return (
+            <FadeInPanel>
+              <Victory
+                GRID_SIZE={GRID_SIZE}
+                secondsElapsed={secondsElapsed}
+                numOfMoves={numOfMoves}
+                numOfAssists={numOfAssists}
+                numOfResets={numOfResets}
+                defaultBoard={defaultBoard}
+                formatTime={formatTime}
+              />
+            </FadeInPanel>
+          );
+        })()}
 
-                <div className="victory-footer">
-                  <StatBox label="Time" value={formatTime(secondsElapsed)} />
-                  <StatBox label="Moves" value={numOfMoves} />
-                </div>
-                <div className="victory-footer2">
-                  <StatBox label="Assists" value={numOfAssists} />
-                  <StatBox label="Resets" value={numOfResets} />
-                </div>
-                <p style={{ fontSize: '1rem' }}>Screnshot and share with others!</p>
-              </div>
-            </div>
-          </FadeInPanel>
-        )}
+        {showHelp && (() => {
+          const Wrapper = isHelpClosing ? FadeOutPanel : FadeInPanel;
 
-        {showHelp && !isHelpClosing && (
-          <FadeInPanel>
-            <Help
-              setShowHelp={setShowHelp}
-              onclick={onclick}
-              offclick={offclick}
-              assist={assist}
-              ongrid={ongrid}
-              closeHelp={closeHelp}
-              playSound={playSound}
-            />
-          </FadeInPanel>
-        )}
+          const helpProps = {
+            closeHelp,
+            playSound,
+          };
 
-        {showHelp && isHelpClosing && (
-          <FadeOutPanel>
-            <Help
-              onclick={onclick}
-              offclick={offclick}
-              assist={assist}
-              ongrid={ongrid}
-              closeHelp={closeHelp}
-              playSound={playSound}
-            />
-          </FadeOutPanel>
-        )}
+          return (
+            <Wrapper>
+              <Help {...helpProps} />
+            </Wrapper>
+          );
+        })()}
 
-        {showSettings && !isSettingClosing && (
-          <FadeInPanel>
-            <Settings
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
-              onColor={onColor}
-              setOnColor={setOnColor}
-              offColor={offColor}
-              setOffColor={setOffColor}
-              closeSettings={closeSettings}
-              setShowSettings={setShowSettings}
-              playSound={playSound}
-            />
-          </FadeInPanel>
-        )}
+        {showSettings && (() => {
+          const Wrapper = isSettingClosing ? FadeOutPanel : FadeInPanel;
 
-        {showSettings && isSettingClosing && (
-          <FadeOutPanel>
-            <Settings
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
-              onColor={onColor}
-              setOnColor={setOnColor}
-              offColor={offColor}
-              setOffColor={setOffColor}
-              closeSettings={closeSettings}
-              setShowSettings={setShowSettings}
-              playSound={playSound}
-            />
-          </FadeOutPanel>
-        )}
+          const settingsProps = {
+            darkMode,
+            setDarkMode,
+            onColor,
+            setOnColor,
+            offColor,
+            setOffColor,
+            closeSettings,
+            setShowSettings,
+            playSound,
+          };
+
+          return (
+            <Wrapper>
+              <Settings {...settingsProps} />
+            </Wrapper>
+          );
+        })()}
       </div>
 
     </>

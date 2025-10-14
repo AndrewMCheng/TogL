@@ -80,12 +80,8 @@ export function Settings({
 }
 
 export function Help({
-    offclick = { offclick },
-    onclick = { onclick },
-    assist = { assist },
-    ongrid = { ongrid },
-    closeHelp = { closeHelp },
-    playSound = () => { }
+    closeHelp = () => { },
+    playSound = () => { },
 }) {
     return (
         <div className="overlay" onClick={closeHelp}>
@@ -110,4 +106,63 @@ export function Help({
             </div>
         </div>
     )
+}
+
+function StatBox(props) {
+    return (
+        <div className="stat-box">
+            <p className="stat-label">{props.label}</p>
+            <p className="stat-value">{props.value}</p>
+        </div>
+    )
+}
+
+export function Victory({
+  GRID_SIZE = 5,           
+  secondsElapsed = 0,      
+  numOfMoves = 0,          
+  numOfAssists = 0,        
+  numOfResets = 0,        
+  defaultBoard = [], 
+  formatTime = () => {}
+}) {
+  return (
+    <div className="victory-overlay">
+      <div className="victory-box">
+        <p className="victory-title">
+          You got today's puzzle! Come back tomorrow for a new one
+        </p>
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${GRID_SIZE}, 30px)`,
+            gridTemplateRows: `repeat(${GRID_SIZE}, 30px)`,
+            gap: '3px',
+            justifyContent: 'center'
+          }}
+        >
+          {defaultBoard.map((val, index) => (
+            <div
+              key={index}
+              className="victory-cell"
+              style={{
+                backgroundColor: val ? '#4CAF50' : '#C0C0C0',
+                borderRadius: '2.5px'
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="victory-footer">
+          <StatBox label="Time" value={formatTime(secondsElapsed)} />
+          <StatBox label="Moves" value={numOfMoves} />
+        </div>
+        <div className="victory-footer2">
+          <StatBox label="Assists" value={numOfAssists} />
+          <StatBox label="Resets" value={numOfResets} />
+        </div>
+        <p style={{ fontSize: '1rem' }}>Screenshot and share with others!</p>
+      </div>
+    </div>
+  );
 }

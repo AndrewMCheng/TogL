@@ -1,5 +1,5 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://toglegame.com',
+  siteUrl: 'https://playtogl.com',
   generateRobotsTxt: true, // optional
 }
