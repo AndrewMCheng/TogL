@@ -1,5 +1,6 @@
 
 import "./globals.css";
+import Script from "next/script";
 
 export const metadata = {
   title: "Togl - Daily Puzzle Game",
@@ -52,7 +53,7 @@ export const metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png", 
+    apple: "/apple-touch-icon.png",
   },
   themeColor: "#ffffff",
   robots: {
@@ -62,10 +63,28 @@ export const metadata = {
   },
 };
 
-export default function RootLayout ({ children }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en" className="light-mode">
       <head>
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-YK9722PXNR"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-YK9722PXNR');
+            `,
+          }}
+        />
+        
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
