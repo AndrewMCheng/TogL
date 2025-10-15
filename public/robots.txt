@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://toglegame.com
+Host: https://playtogl.com
 
 # Sitemaps
-Sitemap: https://toglegame.com/sitemap.xml
+Sitemap: https://playtogl.com/sitemap.xml
