@@ -269,7 +269,7 @@ export default function Page() {
     <>
       <div className="main-container">
         <div className="header-container">
-          <p className="title">Togl</p>
+          <p className="title">TogL</p>
 
           <AnimatedButton className="reset-button" onClick={() => {
             resetGame();
