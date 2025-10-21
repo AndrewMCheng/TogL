@@ -6,6 +6,7 @@ export const metadata = {
   title: "Togl - Daily Puzzle Game",
   description:
     "Togl - a daily puzzle game inspired by Lights Out. Solve today's puzzle, challenge yourself, and share your score with friends!",
+  metadataBase: new URL("https://playtogl.com"),
   keywords: [
     "Togl",
     "Lights Out",
@@ -55,7 +56,6 @@ export const metadata = {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  themeColor: "#ffffff",
   robots: {
     index: true,
     follow: true,
@@ -65,8 +65,21 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="light-mode">
+    <html lang="en" className="light-mode" suppressHydrationWarning={true}>
       <head>
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+      (function() {
+        try {
+          const darkMode = localStorage.getItem('darkMode') === 'true';
+          document.documentElement.classList.add(darkMode ? 'dark-mode' : 'light-mode');
+        } catch(e) {}
+      })();
+    `,
+          }}
+        />
 
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-YK9722PXNR"
@@ -84,10 +97,10 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
-        
+
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+          content="width=device-width, initial-scale=1.0"
         />
         <meta
           name="google-site-verification"

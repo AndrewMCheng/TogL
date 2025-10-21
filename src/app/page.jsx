@@ -1,16 +1,20 @@
+//optimize mobile performance though page speed insights, lightbulub google dev
+//space between for header(mobile) remove board animation off initial load colorblind*
 "use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import './globals.css'
-import seeds from './seeds'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear, faRotate, faQuestion } from '@fortawesome/free-solid-svg-icons';
-import { faLightbulb } from '@fortawesome/free-regular-svg-icons';
 import { solveLightsOut } from './assist';
-import { GRID_SIZE, AnimatedButton, AnimatedCell, FadeInPanel, FadeOutPanel, ResetGame } from './Animations';
-import { Settings, Help, Victory } from './Components';
+import { FadeInPanel, FadeOutPanel, BoardChange } from './Animations';
+import { Settings, Help, Victory, Header, Board6x6 } from './Components';
 import { Howl } from 'howler';
+import { generateLightsOutSeed, getTodaySeedNumber, generateRealLightsOutSeed } from './seedGen.js';
+
+const todaySeed = getTodaySeedNumber()
+const seed6x6 = generateLightsOutSeed(6, todaySeed);
+const seed5x5 = generateRealLightsOutSeed(generateLightsOutSeed(5, todaySeed));
+const seed4x4 = generateRealLightsOutSeed(generateLightsOutSeed(4, todaySeed));
 
 const sounds = {
   click: new Howl({ src: ['./assets/click.wav'], volume: 0.875, preload: true }),
@@ -21,14 +25,20 @@ const sounds = {
   uiclick: new Howl({ src: ['./assets/uiclick.wav'], volume: 1.0, preload: true }),
 };
 
-function getTodayKey() {
+function getTodayKey(diff) {
   const today = new Date().toISOString().split('T')[0];
-  return `togl-stats-${today}`;
+  return `togl-stats-${today}-diff${diff}`;
 }
 
 export default function Page() {
-  const currentSeed = seeds[0];
-  const [victory, setVictory] = useState(false);
+  const [difficulty, setDifficulty] = useState(1);
+  const [previousDifficulty, setPreviousDifficulty] = useState(1);
+  const sizeMap = [4, 5, 6];
+  const gridSize = sizeMap[difficulty] || 6;
+  const currentSeed = difficulty === 0 ? seed4x4 : (difficulty === 1 ? seed5x5 : seed6x6);
+  const [victories, setVictories] = useState({ 0: false, 1: false, 2: false });
+  const victory = victories[difficulty];
+
   const [resetKey, setResetKey] = useState(false);
 
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -40,17 +50,29 @@ export default function Page() {
   const [onColor, setOnColor] = useState('#4CAF50');
   const [offColor, setOffColor] = useState('#C0C0C0');
 
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const todayKey = getTodayKey();
-    const savedStats = JSON.parse(localStorage.getItem(todayKey)) || {};
+    const allVictories = {};
+    [0, 1, 2].forEach(diff => {
+      const key = getTodayKey(diff);
+      const saved = JSON.parse(localStorage.getItem(key)) || {};
+      console.log(`Loaded ${key}:`, saved);
+      allVictories[diff] = saved.victory || false;
+    });
+    setVictories(allVictories);
 
-    setSecondsElapsed(savedStats.secondsElapsed || 0);
-    setNumOfMoves(savedStats.numOfMoves || 0);
-    setNumOfResets(savedStats.numOfResets || 0);
-    setNumOfAssists(savedStats.numOfAssists || 0);
+    const currentKey = getTodayKey(difficulty);
+    const currentStats = JSON.parse(localStorage.getItem(currentKey)) || {};
 
+    setSecondsElapsed(currentStats.secondsElapsed || 0);
+    setNumOfMoves(currentStats.numOfMoves || 0);
+    setNumOfResets(currentStats.numOfResets || 0);
+    setNumOfAssists(currentStats.numOfAssists || 0);
+  }, [difficulty]);
+
+  useLayoutEffect(() => {
     setDarkMode(localStorage.getItem('darkMode') === 'true');
     setOnColor(localStorage.getItem('onColor') || '#4CAF50');
     setOffColor(localStorage.getItem('offColor') || '#C0C0C0');
@@ -69,8 +91,6 @@ export default function Page() {
   const [isSettingClosing, setIsSettingClosing] = useState(false);
   const [isHelpClosing, setIsHelpClosing] = useState(false);
   const [animatedCellsReset, setAnimatedCellsReset] = useState([]);
-  const [isDailyAssistLimit, setIsDailyAssistLimit] = useState(false);
-  const [isDailyResetLimit, setIsDailyResetLimit] = useState(false);
 
   function playSound(name) {
     if (sounds[name]) {
@@ -80,58 +100,79 @@ export default function Page() {
   }
 
   useEffect(() => {
-    const todayKey = getTodayKey();
-    const stats = {
-      secondsElapsed,
-      numOfMoves,
-      numOfResets,
-      numOfAssists,
-    };
-    localStorage.setItem(todayKey, JSON.stringify(stats));
-  }, [secondsElapsed, numOfMoves, numOfResets, numOfAssists]);
-
-  useEffect(() => {
-    const todayKey = getTodayKey();
+    const today = new Date().toISOString().split('T')[0];
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('togl-stats-') && key !== todayKey) {
+      if (key.startsWith('togl-stats-') && !key.includes(today)) {
         localStorage.removeItem(key);
       }
     });
   }, []);
 
+  useEffect(() => {
+    if (!victory) return; 
+
+    const currentKey = getTodayKey(difficulty);
+    localStorage.setItem(currentKey, JSON.stringify({
+      secondsElapsed,
+      numOfMoves,
+      numOfResets,
+      numOfAssists,
+      victory: true,
+    }));
+  }, [secondsElapsed, numOfMoves, numOfResets, numOfAssists, victory, difficulty]);
+
+  useEffect(() => {
+  return () => {
+    const currentKey = getTodayKey(difficulty);
+    const saved = JSON.parse(localStorage.getItem(currentKey));
+
+    if (saved && !saved.victory) {
+      localStorage.removeItem(currentKey);
+    }
+  };
+}, [difficulty]);
+
   const generateBoard = (seed) => {
-    return seeds.map(v => v === 1);
+    return seed.map(v => v === 1);
   };
 
-  const [board, setBoard] = useState(generateBoard(currentSeed));
+  const [board, setBoard] = useState(() => generateBoard(currentSeed));
   const defaultBoard = generateBoard(currentSeed);
 
   useEffect(() => {
+    const seed = difficulty === 0 ? seed4x4 : (difficulty === 1 ? seed5x5 : seed6x6);
+    const todayKey = getTodayKey(difficulty);
+    const savedStats = JSON.parse(localStorage.getItem(todayKey)) || {};
+
+    if (savedStats.victory) {
+      setBoard(Array(gridSize * gridSize).fill(true));
+    } else {
+      setBoard(seed.map(v => v === 1));
+    }
+
+    setHasStarted(false);
+    setIsHighlighted(null);
+  }, [difficulty]);
+
+  useEffect(() => {
     if (victory) {
-      const today = new Date().toDateString();
-      const completedDate = localStorage.getItem("puzzleCompletedDate");
+      const today = new Date().toISOString().split('T')[0];
+      const winKey = `togl-win-diff${difficulty}`;
+      const lastWinDate = localStorage.getItem(winKey);
+
       document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
 
-      if (completedDate !== today) {
+      if (lastWinDate !== today) {
         playSound("win");
-        localStorage.setItem("puzzleCompletedDate", today);
+        localStorage.setItem(winKey, today);
       }
 
-    }
-    else {
+    } else {
       document.documentElement.style.overflow = 'auto';
       document.body.style.overflow = 'auto';
     }
   }, [victory]);
-
-  useEffect(() => {
-    const today = new Date().toDateString();
-    const completedDate = localStorage.getItem('puzzleCompletedDate');
-    if (completedDate === today) {
-      setVictory(true);
-    }
-  }, []);
 
   const handleClick = (index) => {
     if (victory) return;
@@ -142,33 +183,41 @@ export default function Page() {
 
     newBoard[index] = !newBoard[index];
 
-    if (index % GRID_SIZE !== 0) {
+    if (index % gridSize !== 0) {
       newBoard[index - 1] = !newBoard[index - 1];
       toggledCells.push(index - 1);
     }
-    if (index % GRID_SIZE !== GRID_SIZE - 1) {
+    if (index % gridSize !== gridSize - 1) {
       newBoard[index + 1] = !newBoard[index + 1];
       toggledCells.push(index + 1);
     }
-    if (index - GRID_SIZE >= 0) {
-      newBoard[index - GRID_SIZE] = !newBoard[index - GRID_SIZE];
-      toggledCells.push(index - GRID_SIZE);
+    if (index - gridSize >= 0) {
+      newBoard[index - gridSize] = !newBoard[index - gridSize];
+      toggledCells.push(index - gridSize);
     }
-    if (index + GRID_SIZE < GRID_SIZE * GRID_SIZE) {
-      newBoard[index + GRID_SIZE] = !newBoard[index + GRID_SIZE];
-      toggledCells.push(index + GRID_SIZE);
+    if (index + gridSize < gridSize * gridSize) {
+      newBoard[index + gridSize] = !newBoard[index + gridSize];
+      toggledCells.push(index + gridSize);
     }
 
     setBoard(newBoard);
     setNumOfMoves(numOfMoves + 1);
     setIsHighlighted(null);
-
     setAnimatedCells(toggledCells);
 
     if (newBoard.every(cell => cell)) {
-      setVictory(true);
-    }
+      setVictories(prev => ({ ...prev, [difficulty]: true }));
 
+      const todayKey = getTodayKey(difficulty);
+      const stats = {
+        secondsElapsed,
+        numOfMoves,
+        numOfResets,
+        numOfAssists,
+        victory: true,
+      };
+      localStorage.setItem(todayKey, JSON.stringify(stats));
+    }
     setTimeout(() => setAnimatedCells([]), 300);
   }
 
@@ -182,7 +231,7 @@ export default function Page() {
     return () => clearInterval(timer);
   }, [resetKey, victory, hasStarted]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark-mode');
       document.documentElement.classList.remove('light-mode');
@@ -208,7 +257,7 @@ export default function Page() {
       playSound("reset")
     }
     setAnimatedCellsReset(cellsToFlip);
-    setVictory(false);
+    setVictories(prev => ({ ...prev, [difficulty]: false }));
     setResetKey(!resetKey);
     setHasStarted(false);
     setSecondsElapsed(0);
@@ -240,7 +289,7 @@ export default function Page() {
     for (let row = 0; row < solution.length; row++) {
       for (let col = 0; col < solution[row].length; col++) {
         if (solution[row][col] === 1) {
-          pressableIndices.push({ row, col, index: row * GRID_SIZE + col });
+          pressableIndices.push({ row, col, index: row * gridSize + col });
         }
       }
     }
@@ -268,44 +317,17 @@ export default function Page() {
   return (
     <>
       <div className="main-container">
-        <div className="header-container">
-          <p className="title">TogL</p>
-
-          <AnimatedButton className="reset-button" onClick={() => {
-            resetGame();
-          }
-          }>
-            <FontAwesomeIcon icon={faRotate} />
-          </AnimatedButton>
-          <AnimatedButton className="assist-button" onClick={() => {
-            const assist = getAssist(board);
-            if (assist) {
-              setIsHighlighted(assist.index);
-              setNumOfAssists(numOfAssists + 1);
-              playSound("assist");
-            }
-          }}>
-            <FontAwesomeIcon icon={faLightbulb} />
-          </AnimatedButton>
-          <AnimatedButton
-            className="settings-button"
-            onClick={() => {
-              setShowSettings(true)
-              playSound("uiclick");
-            }}
-          >
-            <FontAwesomeIcon icon={faGear} />
-          </AnimatedButton>
-          <AnimatedButton
-            className="help-button"
-            onClick={() => {
-              setShowHelp(true)
-              playSound("uiclick");
-            }}
-          >
-            <FontAwesomeIcon icon={faQuestion} />
-          </AnimatedButton>
-        </div>
+        <Header
+          resetGame={resetGame}
+          getAssist={getAssist}
+          board={board}
+          setIsHighlighted={setIsHighlighted}
+          numOfAssists={numOfAssists}
+          setNumOfAssists={setNumOfAssists}
+          setShowSettings={setShowSettings}
+          setShowHelp={setShowHelp}
+          playSound={playSound}
+        />
 
         <hr className="divider" />
 
@@ -313,51 +335,36 @@ export default function Page() {
           Time: {formatTime(secondsElapsed)}
         </p>
 
-        <div
-          className="grid"
-          style={{
-            gridTemplateColumns: `repeat(${GRID_SIZE}, 3rem)`,
-            gridTemplateRows: `repeat(${GRID_SIZE}, 3rem)`,
-            width: `${GRID_SIZE * 3 + (GRID_SIZE - 1) * 0.25}rem`
-          }}
-        >
+        <BoardChange difficulty={difficulty} direction={difficulty > previousDifficulty ? 1 : -1}>
+          <Board6x6
+            board={board}
+            handleClick={handleClick}
+            onColor={onColor}
+            offColor={offColor}
+            isHighlighted={isHighlighted}
+            animatedCells={animatedCells}
+            animatedCellsReset={animatedCellsReset}
+            GRID_SIZE={gridSize}
+            playSound={playSound}
 
-          {board.map((val, index) => (
-
-            <ResetGame key={index} flip={animatedCellsReset.includes(index)}>
-              <AnimatedCell
-                onClick={() => {
-                  handleClick(index);
-                  playSound("click");
-                }}
-                className="cell"
-                isAnimatedCell={animatedCells.includes(index) || index === isHighlighted}
-                style={{
-                  backgroundColor: index === isHighlighted
-                    ? 'orange'
-                    : (val ? onColor : offColor),
-                  boxShadow: index === isHighlighted
-                    ? '0 0 10px 3px orange'
-                    : (val ? '0 0 5px rgba(0, 0, 0, 0.25)' : 'none'),
-                  transition: 'box-shadow 0.3s ease, background-color 0.3s ease'
-                }}
-              ></AnimatedCell>
-            </ResetGame>
-
-          ))}
-        </div>
+          />
+        </BoardChange>
 
         {victory && (() => {
           return (
             <FadeInPanel>
               <Victory
-                GRID_SIZE={GRID_SIZE}
+                playSound={playSound}
+                GRID_SIZE={gridSize}
                 secondsElapsed={secondsElapsed}
                 numOfMoves={numOfMoves}
                 numOfAssists={numOfAssists}
                 numOfResets={numOfResets}
                 defaultBoard={defaultBoard}
                 formatTime={formatTime}
+                setDifficulty={setDifficulty}
+                difficulty={difficulty}
+                setPreviousDifficulty={setPreviousDifficulty}
               />
             </FadeInPanel>
           );
@@ -391,6 +398,9 @@ export default function Page() {
             closeSettings,
             setShowSettings,
             playSound,
+            setDifficulty,
+            difficulty,
+            setPreviousDifficulty,
           };
 
           return (
@@ -400,7 +410,6 @@ export default function Page() {
           );
         })()}
       </div>
-
     </>
   )
 }

@@ -1,9 +1,6 @@
-import { GRID_SIZE } from './Animations';
-const SIZE = GRID_SIZE;
-const N = SIZE * SIZE;
-const idx = (r, c) => r * SIZE + c;
-
-function buildToggleMatrix() {
+function buildToggleMatrix(SIZE) {
+  const N = SIZE * SIZE;
+  const idx = (r, c) => r * SIZE + c;
   const A = Array.from({ length: N }, () => Array(N).fill(0));
 
   for (let r = 0; r < SIZE; r++) {
@@ -21,6 +18,7 @@ function buildToggleMatrix() {
 }
 
 function solveGF2(A, b) {
+  const N = A.length;
   const matrix = A.map((row, i) => [...row, b[i]]);
 
   let row = 0;
@@ -62,9 +60,18 @@ function solveGF2(A, b) {
 }
 
 export function solveLightsOut(inputBoard) {
-  const b = inputBoard.flat().map(cell => cell ^ 1);
+  // inputBoard is expected to be a flat array of booleans (or 0/1). Determine size from length.
+  const flat = Array.isArray(inputBoard[0]) ? inputBoard.flat() : inputBoard.flat();
+  const N = flat.length;
+  const SIZE = Math.round(Math.sqrt(N));
+  if (SIZE * SIZE !== N) {
+    console.error('solveLightsOut: input board length is not a perfect square', N);
+    return null;
+  }
 
-  const A = buildToggleMatrix();
+  const b = flat.map(cell => (cell ? 0 : 1)); // target is all 1s in original code, so invert
+
+  const A = buildToggleMatrix(SIZE);
   const solution = solveGF2(A, b);
 
   if (!solution) {
