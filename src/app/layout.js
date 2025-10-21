@@ -31,7 +31,7 @@ export const metadata = {
   openGraph: {
     title: "Togl - Daily Lights Out Puzzle",
     description:
-      "Can you solve today's Lights Out puzzle? Challenge yourself with a new daily puzzle and share your score!",
+      "Can you solve today's puzzle? Challenge yourself with a new daily puzzle and share your score!",
     url: "https://playtogl.com",
     siteName: "Togl",
     images: [
@@ -68,16 +68,22 @@ export default function RootLayout({ children }) {
     <html lang="en" className="light-mode" suppressHydrationWarning={true}>
       <head>
 
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png"></link>
+        <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png"></link>
+        <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png"></link>
+        <link rel="manifest" href="favicon/site.webmanifest"></link>
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
-      (function() {
-        try {
-          const darkMode = localStorage.getItem('darkMode') === 'true';
-          document.documentElement.classList.add(darkMode ? 'dark-mode' : 'light-mode');
-        } catch(e) {}
-      })();
-    `,
+              (function() {
+                try {
+                  const darkMode = localStorage.getItem('darkMode') === 'true';
+                  document.documentElement.classList.add(darkMode ? 'dark-mode' : 'light-mode');
+                } catch(e) {}
+              })();
+            `,
           }}
         />
 
@@ -109,6 +115,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="color-scheme" content="light dark" />
+        <meta name="mobile-web-app-capable" content="yes"></meta>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -116,7 +123,7 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "VideoGame",
               name: "Togl",
-              url: "https://toglgame.com",
+              url: "https://playtogl.com",
               description:
                 "Togl - a daily puzzle game inspired by Lights Out. Solve today's puzzle and challenge yourself!",
               image: "https://playtogl.com/og-image.png",

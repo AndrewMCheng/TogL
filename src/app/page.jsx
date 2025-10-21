@@ -1,5 +1,6 @@
-//optimize mobile performance though page speed insights, lightbulub google dev
-//space between for header(mobile) remove board animation off initial load colorblind*
+//optimize mobile performance though page speed insights, lightbulub google dev backlink
+//remove initial loading animation decrease size*colorblind*
+//remove background for favicons
 "use client";
 
 import { useState, useEffect, useLayoutEffect } from 'react'
