@@ -26,8 +26,16 @@ const sounds = {
   uiclick: new Howl({ src: ['./assets/uiclick.wav'], volume: 1.0, preload: true }),
 };
 
+function getLocalDateString() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 function getTodayKey(diff) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   return `togl-stats-${today}-diff${diff}`;
 }
 
@@ -38,40 +46,24 @@ export default function Page() {
   const gridSize = sizeMap[difficulty] || 6;
   const currentSeed = difficulty === 0 ? seed4x4 : (difficulty === 1 ? seed5x5 : seed6x6);
   const [victories, setVictories] = useState({ 0: false, 1: false, 2: false });
+  const [stats, setStats] = useState({
+    0: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+    1: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+    2: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+  });
+
+  const [secondsElapsed, setSecondsElapsed] = useState(stats[difficulty].secondsElapsed);
+  const [numOfMoves, setNumOfMoves] = useState(stats[difficulty].numOfMoves);
+  const [numOfResets, setNumOfResets] = useState(stats[difficulty].numOfResets);
+  const [numOfAssists, setNumOfAssists] = useState(stats[difficulty].numOfAssists);
+
   const victory = victories[difficulty];
 
   const [resetKey, setResetKey] = useState(false);
 
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
-  const [numOfMoves, setNumOfMoves] = useState(0);
-  const [numOfResets, setNumOfResets] = useState(0);
-  const [numOfAssists, setNumOfAssists] = useState(0);
-
   const [darkMode, setDarkMode] = useState(false);
   const [onColor, setOnColor] = useState('#4CAF50');
   const [offColor, setOffColor] = useState('#C0C0C0');
-
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const allVictories = {};
-    [0, 1, 2].forEach(diff => {
-      const key = getTodayKey(diff);
-      const saved = JSON.parse(localStorage.getItem(key)) || {};
-      console.log(`Loaded ${key}:`, saved);
-      allVictories[diff] = saved.victory || false;
-    });
-    setVictories(allVictories);
-
-    const currentKey = getTodayKey(difficulty);
-    const currentStats = JSON.parse(localStorage.getItem(currentKey)) || {};
-
-    setSecondsElapsed(currentStats.secondsElapsed || 0);
-    setNumOfMoves(currentStats.numOfMoves || 0);
-    setNumOfResets(currentStats.numOfResets || 0);
-    setNumOfAssists(currentStats.numOfAssists || 0);
-  }, [difficulty]);
 
   useLayoutEffect(() => {
     setDarkMode(localStorage.getItem('darkMode') === 'true');
@@ -84,6 +76,43 @@ export default function Page() {
   useEffect(() => localStorage.setItem('darkMode', darkMode), [darkMode]);
   useEffect(() => localStorage.setItem('onColor', onColor), [onColor]);
   useEffect(() => localStorage.setItem('offColor', offColor), [offColor]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const today = getLocalDateString();
+
+    // Remove any stale keys from previous days first
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('togl-stats-') && !key.includes(today)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    const allVictories = {};
+    const allStats = {};
+    [0, 1, 2].forEach(diff => {
+      const key = getTodayKey(diff);
+      const saved = JSON.parse(localStorage.getItem(key)) || {};
+
+      allVictories[diff] = !!saved.victory;
+      allStats[diff] = {
+        secondsElapsed: Number.isFinite(saved.secondsElapsed) ? saved.secondsElapsed : 0,
+        numOfMoves: Number.isFinite(saved.numOfMoves) ? saved.numOfMoves : 0,
+        numOfResets: Number.isFinite(saved.numOfResets) ? saved.numOfResets : 0,
+        numOfAssists: Number.isFinite(saved.numOfAssists) ? saved.numOfAssists : 0,
+      };
+    });
+
+    setVictories(allVictories);
+    setStats(allStats);
+
+    const current = allStats[difficulty] || { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 };
+    setSecondsElapsed(current.secondsElapsed);
+    setNumOfMoves(current.numOfMoves);
+    setNumOfResets(current.numOfResets);
+    setNumOfAssists(current.numOfAssists);
+  }, []);
 
   const [showSettings, setShowSettings] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(null);
@@ -101,37 +130,38 @@ export default function Page() {
   }
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('togl-stats-') && !key.includes(today)) {
-        localStorage.removeItem(key);
+    if (!hasStarted && !victories[difficulty]) return; 
+
+    const currentKey = getTodayKey(difficulty);
+    const data = {
+      victory: !!victories[difficulty],
+      secondsElapsed: Number.isFinite(secondsElapsed) ? secondsElapsed : 0,
+      numOfMoves: Number.isFinite(numOfMoves) ? numOfMoves : 0,
+      numOfResets: Number.isFinite(numOfResets) ? numOfResets : 0,
+      numOfAssists: Number.isFinite(numOfAssists) ? numOfAssists : 0,
+    };
+
+    localStorage.setItem(currentKey, JSON.stringify(data));
+  }, [
+    victories[difficulty], 
+    hasStarted,             
+    secondsElapsed,
+    numOfMoves,
+    numOfResets,
+    numOfAssists,
+    difficulty
+  ]);
+
+  useEffect(() => {
+    return () => {
+      const currentKey = getTodayKey(difficulty);
+      const saved = JSON.parse(localStorage.getItem(currentKey));
+
+      if (saved && !saved.victory) {
+        localStorage.removeItem(currentKey);
       }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!victory) return; 
-
-    const currentKey = getTodayKey(difficulty);
-    localStorage.setItem(currentKey, JSON.stringify({
-      secondsElapsed,
-      numOfMoves,
-      numOfResets,
-      numOfAssists,
-      victory: true,
-    }));
-  }, [secondsElapsed, numOfMoves, numOfResets, numOfAssists, victory, difficulty]);
-
-  useEffect(() => {
-  return () => {
-    const currentKey = getTodayKey(difficulty);
-    const saved = JSON.parse(localStorage.getItem(currentKey));
-
-    if (saved && !saved.victory) {
-      localStorage.removeItem(currentKey);
-    }
-  };
-}, [difficulty]);
+    };
+  }, [difficulty]);
 
   const generateBoard = (seed) => {
     return seed.map(v => v === 1);
@@ -156,24 +186,12 @@ export default function Page() {
   }, [difficulty]);
 
   useEffect(() => {
-    if (victory) {
-      const today = new Date().toISOString().split('T')[0];
-      const winKey = `togl-win-diff${difficulty}`;
-      const lastWinDate = localStorage.getItem(winKey);
-
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-
-      if (lastWinDate !== today) {
-        playSound("win");
-        localStorage.setItem(winKey, today);
-      }
-
-    } else {
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.overflow = 'auto';
-    }
-  }, [victory]);
+    const current = stats[difficulty];
+    setSecondsElapsed(current.secondsElapsed);
+    setNumOfMoves(current.numOfMoves);
+    setNumOfResets(current.numOfResets);
+    setNumOfAssists(current.numOfAssists);
+  }, [difficulty]);
 
   const handleClick = (index) => {
     if (victory) return;

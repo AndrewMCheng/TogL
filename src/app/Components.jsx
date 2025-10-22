@@ -136,7 +136,7 @@ export function Help({
                     <p>Clicking a cell turns it on and the cells adjacent to it</p>
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                    <p> <FontAwesomeIcon icon={faGear} /> Settings - edit the color themes</p>
+                    <p> <FontAwesomeIcon icon={faGear} /> Settings - edit themes and change difficulty</p>
                     <p> <FontAwesomeIcon icon={faLightbulb} /> Lightbulb - get a hint</p>
                     <p> <FontAwesomeIcon icon={faRotate} /> Reset - reset the board</p>
                 </div>
@@ -297,7 +297,7 @@ export function Board6x6({
             style={{
                 gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
                 gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-                width: "min(80vw, 360px)",
+                width: "min(80vw, 300px)",
                 aspectRatio: "1 / 1",
             }}
         >
