@@ -46,10 +46,29 @@ export default function Page() {
   const gridSize = sizeMap[difficulty] || 6;
   const currentSeed = difficulty === 0 ? seed4x4 : (difficulty === 1 ? seed5x5 : seed6x6);
   const [victories, setVictories] = useState({ 0: false, 1: false, 2: false });
-  const [stats, setStats] = useState({
-    0: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
-    1: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
-    2: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+
+  const [stats, setStats] = useState(() => {
+    if (typeof window === 'undefined') {
+      return {
+        0: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+        1: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+        2: { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 },
+      };
+    }
+
+    const today = getLocalDateString();
+    const allStats = {};
+    [0, 1, 2].forEach(diff => {
+      const key = getTodayKey(diff);
+      const saved = JSON.parse(localStorage.getItem(key)) || {};
+      allStats[diff] = {
+        secondsElapsed: saved.secondsElapsed || 0,
+        numOfMoves: saved.numOfMoves || 0,
+        numOfResets: saved.numOfResets || 0,
+        numOfAssists: saved.numOfAssists || 0,
+      };
+    });
+    return allStats;
   });
 
   const [secondsElapsed, setSecondsElapsed] = useState(stats[difficulty].secondsElapsed);
@@ -130,7 +149,7 @@ export default function Page() {
   }
 
   useEffect(() => {
-    if (!hasStarted && !victories[difficulty]) return; 
+    if (!hasStarted && !victories[difficulty]) return;
 
     const currentKey = getTodayKey(difficulty);
     const data = {
@@ -143,8 +162,8 @@ export default function Page() {
 
     localStorage.setItem(currentKey, JSON.stringify(data));
   }, [
-    victories[difficulty], 
-    hasStarted,             
+    victories[difficulty],
+    hasStarted,
     secondsElapsed,
     numOfMoves,
     numOfResets,
@@ -350,9 +369,16 @@ export default function Page() {
 
         <hr className="divider" />
 
-        <p className="timer" >
-          Time: {formatTime(secondsElapsed)}
-        </p>
+        {(() => {
+          const [mounted, setMounted] = useState(false);
+          useEffect(() => setMounted(true), []);
+
+          return (
+            <p className="timer">
+              Time: {mounted ? formatTime(secondsElapsed) : "00:00.00"}
+            </p>
+          );
+        })()}
 
         <BoardChange difficulty={difficulty} direction={difficulty > previousDifficulty ? 1 : -1}>
           <Board6x6
