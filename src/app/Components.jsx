@@ -1,6 +1,6 @@
 import { AnimatedButton, AnimatedColorPicker, AnimatedToggle, ResetGame, AnimatedCell } from './Animations';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear, faRotate, faQuestion } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faRotate, faQuestion, faShareNodes } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb } from '@fortawesome/free-regular-svg-icons';
 import { useState, useEffect } from 'react';
 import './globals.css'
@@ -212,7 +212,13 @@ export function Victory({
                         <StatBox label="Assists" value={numOfAssists} />
                         <StatBox label="Resets" value={numOfResets} />
                     </div>
-                    <p style={{ fontSize: '1rem' }}>Screenshot and share with others!</p>
+                    <p style={{ fontSize: '1rem', display: 'inline-block' }}>Share with others!</p>
+                    <AnimatedButton className="share-button"
+                        onClick={() => {handleCopyResults({ difficulty, secondsElapsed, numOfMoves })
+                        playSound("uiclick")}}
+                    >
+                        <FontAwesomeIcon icon={faShareNodes} />
+                    </AnimatedButton>
                 </div>
                 <DifficultyTabs setDifficulty={setDifficulty} value={difficulty} setPreviousDifficulty={setPreviousDifficulty} playSound={playSound} />
             </div>
@@ -333,3 +339,23 @@ export function Board6x6({
         </div>
     );
 }
+
+function handleCopyResults({ difficulty, secondsElapsed, numOfMoves }) {
+    const gridSize = difficulty === 0 ? "4x4 Easy 😊" : difficulty === 1 ? "5x5 Medium 😑" : "6x6 Hard 🤬";
+    const minutes = Math.floor(secondsElapsed / 60)
+        .toString()
+        .padStart(2, "0");
+    const seconds = (secondsElapsed % 60).toString().padStart(2, "0");
+    const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+
+    const text = `TogL - ${today}
+${gridSize} 
+⏱️ ${minutes}:${seconds} 🎮 ${numOfMoves} moves
+https://playtogl.com`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Copied results to clipboard!");
+    });
+}
+

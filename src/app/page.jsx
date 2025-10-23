@@ -1,10 +1,9 @@
-//optimize mobile performance though page speed insights, lightbulub google dev backlink
-//remove initial loading animation decrease size*colorblind*
-//remove background for favicons
+//colorblind* confetti for victory, and score
 "use client";
 
 import { useState, useEffect, useLayoutEffect } from 'react'
 import './globals.css'
+import confetti from 'canvas-confetti';
 
 import { solveLightsOut } from './assist';
 import { FadeInPanel, FadeOutPanel, BoardChange } from './Animations';
@@ -100,16 +99,9 @@ export default function Page() {
     if (typeof window === 'undefined') return;
 
     const today = getLocalDateString();
-
-    // Remove any stale keys from previous days first
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('togl-stats-') && !key.includes(today)) {
-        localStorage.removeItem(key);
-      }
-    });
-
     const allVictories = {};
     const allStats = {};
+
     [0, 1, 2].forEach(diff => {
       const key = getTodayKey(diff);
       const saved = JSON.parse(localStorage.getItem(key)) || {};
@@ -125,13 +117,8 @@ export default function Page() {
 
     setVictories(allVictories);
     setStats(allStats);
+  }, [difficulty]);
 
-    const current = allStats[difficulty] || { secondsElapsed: 0, numOfMoves: 0, numOfResets: 0, numOfAssists: 0 };
-    setSecondsElapsed(current.secondsElapsed);
-    setNumOfMoves(current.numOfMoves);
-    setNumOfResets(current.numOfResets);
-    setNumOfAssists(current.numOfAssists);
-  }, []);
 
   const [showSettings, setShowSettings] = useState(false);
   const [isHighlighted, setIsHighlighted] = useState(null);
@@ -212,6 +199,33 @@ export default function Page() {
     setNumOfAssists(current.numOfAssists);
   }, [difficulty]);
 
+  function fireConfetti() {
+    const duration = 2000;
+    const animationEnd = Date.now() + duration;
+    const defaults = {
+      startVelocity: 30,
+      spread: 360,
+      ticks: 60,
+      zIndex: 1000,
+      colors: ['#0074D9', '#FFDC00', '#FF851B', '#B10DC9'] // colorblind-safe palette
+    };
+
+    const interval = setInterval(function () {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: Math.random(), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  }
+
   const handleClick = (index) => {
     if (victory) return;
     if (!hasStarted) setHasStarted(true);
@@ -245,6 +259,9 @@ export default function Page() {
 
     if (newBoard.every(cell => cell)) {
       setVictories(prev => ({ ...prev, [difficulty]: true }));
+
+      fireConfetti();
+      playSound("win");
 
       const todayKey = getTodayKey(difficulty);
       const stats = {
