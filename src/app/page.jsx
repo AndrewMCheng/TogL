@@ -312,12 +312,12 @@ export default function Page() {
       playSound("reset")
     }
     setAnimatedCellsReset(cellsToFlip);
+    setNumOfResets(numOfResets + 1);
     setVictories(prev => ({ ...prev, [difficulty]: false }));
     setResetKey(!resetKey);
     setHasStarted(false);
     setSecondsElapsed(0);
     setNumOfMoves(0);
-    setNumOfResets(numOfResets + 1);
     setIsHighlighted(null);
     setNumOfAssists(0);
     setTimeout(() => {
@@ -382,6 +382,7 @@ export default function Page() {
           setShowSettings={setShowSettings}
           setShowHelp={setShowHelp}
           playSound={playSound}
+          numOfResets={numOfResets}
         />
 
         <hr className="divider" />

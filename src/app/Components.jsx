@@ -214,8 +214,8 @@ export function Victory({
                     </div>
                     <p style={{ fontSize: '1rem', display: 'inline-block' }}>Share with others!</p>
                     <AnimatedButton className="share-button"
-                        onClick={() => {handleCopyResults({ difficulty, secondsElapsed, numOfMoves })
-                        playSound("uiclick")}}
+                        onClick={() => { handleCopyResults({ difficulty, secondsElapsed, numOfMoves, formatTime });
+                        playSound("uiclick") }}
                     >
                         <FontAwesomeIcon icon={faShareNodes} />
                     </AnimatedButton>
@@ -340,18 +340,14 @@ export function Board6x6({
     );
 }
 
-function handleCopyResults({ difficulty, secondsElapsed, numOfMoves }) {
+function handleCopyResults({ difficulty, secondsElapsed, numOfMoves, formatTime }) {
     const gridSize = difficulty === 0 ? "4x4 Easy 😊" : difficulty === 1 ? "5x5 Medium 😑" : "6x6 Hard 🤬";
-    const minutes = Math.floor(secondsElapsed / 60)
-        .toString()
-        .padStart(2, "0");
-    const seconds = (secondsElapsed % 60).toString().padStart(2, "0");
     const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 
     const text = `TogL - ${today}
 ${gridSize} 
-⏱️ ${minutes}:${seconds} 🎮 ${numOfMoves} moves
+⏱️ ${formatTime(secondsElapsed)} 🎮 ${numOfMoves} moves
 https://playtogl.com`;
 
     navigator.clipboard.writeText(text).then(() => {
