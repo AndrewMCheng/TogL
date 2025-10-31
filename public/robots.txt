@@ -1,9 +1,5 @@
-# *
 User-agent: *
 Allow: /
 
-# Host
-Host: https://playtogl.com
-
-# Sitemaps
-Sitemap: https://playtogl.com/sitemap.xml
+# Sitemap index
+Sitemap: https://playtogl.com/sitemapindex.xml

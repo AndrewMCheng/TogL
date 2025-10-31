@@ -1,9 +1,10 @@
-export function getTodaySeedNumber() {
-  const now = new Date();
+export function getTodaySeedNumber(dateString) {
+  const now = dateString ? new Date(dateString) : new Date();
+
+  // normalize to local date (ignore timezone differences)
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
-
   const dateStr = `${yyyy}-${mm}-${dd}`;
 
   let hash = 0;
@@ -14,6 +15,7 @@ export function getTodaySeedNumber() {
 
   return Math.abs(hash);
 }
+
 
 export function generateLightsOutSeed(size = 6, seed = null) {
 
@@ -64,7 +66,13 @@ export function generateRealLightsOutSeed(seed) {
   return result;
 }
 
-
+export function getLocalDateString() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 
 

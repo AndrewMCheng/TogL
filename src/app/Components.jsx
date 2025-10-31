@@ -214,8 +214,8 @@ export function Victory({
                     </div>
                     <p style={{ fontSize: '1rem', display: 'inline-block' }}>Share with others!</p>
                     <AnimatedButton className="share-button"
-                        onClick={() => {handleCopyResults({ difficulty, secondsElapsed, numOfMoves })
-                        playSound("uiclick")}}
+                        onClick={() => { handleCopyResults({ difficulty, secondsElapsed, numOfMoves, formatTime });
+                        playSound("uiclick") }}
                     >
                         <FontAwesomeIcon icon={faShareNodes} />
                     </AnimatedButton>
@@ -236,22 +236,31 @@ export function Header({
     setShowSettings = () => { },
     setShowHelp = () => { },
     playSound = () => { },
+    numOfResets,
 }) {
     return (
         <div className="header-container">
 
             <div className="left-buttons">
                 <AnimatedButton className="reset-button" aria-label="Reset Game" onClick={() => {
-                    resetGame();
+                    if (numOfResets < 2) {
+                        resetGame();
+                    }
+                    else {
+                        alert("You have reached the maximum number of resets (2) for today");
+                    }
                 }}>
                     <FontAwesomeIcon icon={faRotate} />
                 </AnimatedButton>
                 <AnimatedButton className="assist-button" aria-label="Get Hint" onClick={() => {
                     const assist = getAssist(board);
-                    if (assist) {
+                    if (assist && numOfAssists < 5) {
                         setIsHighlighted(assist.index);
                         setNumOfAssists(numOfAssists + 1);
                         playSound("assist");
+                    }
+                    else {
+                        alert("You have reached the maximum number of assists (5) for today");
                     }
                 }}>
                     <FontAwesomeIcon icon={faLightbulb} />
@@ -340,18 +349,14 @@ export function Board6x6({
     );
 }
 
-function handleCopyResults({ difficulty, secondsElapsed, numOfMoves }) {
+function handleCopyResults({ difficulty, secondsElapsed, numOfMoves, formatTime }) {
     const gridSize = difficulty === 0 ? "4x4 Easy 😊" : difficulty === 1 ? "5x5 Medium 😑" : "6x6 Hard 🤬";
-    const minutes = Math.floor(secondsElapsed / 60)
-        .toString()
-        .padStart(2, "0");
-    const seconds = (secondsElapsed % 60).toString().padStart(2, "0");
     const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
 
     const text = `TogL - ${today}
 ${gridSize} 
-⏱️ ${minutes}:${seconds} 🎮 ${numOfMoves} moves
+⏱️ ${formatTime(secondsElapsed)} 🎮 ${numOfMoves} moves
 https://playtogl.com`;
 
     navigator.clipboard.writeText(text).then(() => {
