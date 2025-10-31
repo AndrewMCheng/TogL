@@ -8,7 +8,7 @@ export const metadata = {
   title: "Togl - Daily Puzzle Game",
   description:
     "Togl - a daily puzzle game inspired by Lights Out. Solve today's puzzle, challenge yourself, and share your score with friends!",
-  metadataBase: new URL("https://playtogl.com"),
+  metadataBase: new URL("https://www.playtogl.com"),
   keywords: [
     "Togl",
     "Lights Out",
@@ -34,7 +34,7 @@ export const metadata = {
     title: "Togl - Daily Lights Out Puzzle",
     description:
       "Can you solve today's puzzle? Challenge yourself with a new daily puzzle and share your score!",
-    url: "https://playtogl.com",
+    url: "https://www.playtogl.com",
     siteName: "Togl",
     images: [
       {
@@ -76,7 +76,7 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
         <link rel="manifest" href="/favicon/site.webmanifest" />
 
-        <link rel="canonical" href="https://playtogl.com" />
+        <link rel="canonical" href="https://www.playtogl.com" />
 
         <script
           dangerouslySetInnerHTML={{
@@ -130,7 +130,7 @@ export default function RootLayout({ children }) {
               url: "https://playtogl.com",
               description:
                 "Togl - a daily puzzle game inspired by Lights Out. Solve today's puzzle and challenge yourself!",
-              image: "https://playtogl.com/og-image.png",
+              image: "https://www.playtogl.com/og-image.png",
             }),
           }}
         />
