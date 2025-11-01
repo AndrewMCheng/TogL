@@ -1,17 +1,16 @@
 //colorblind* confetti for victory, and score
 "use client";
 import { useParams } from "next/navigation";
-
-import { useState, useEffect, useLayoutEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo } from 'react'
 import '@/app/globals.css'
 import confetti from 'canvas-confetti';
-
 import { solveLightsOut } from '@/app/assist';
 import { FadeInPanel, FadeOutPanel, BoardChange } from '@/app/Animations';
 import { Settings, Help, Victory, Header, Board6x6 } from '@/app/Components';
 import { Howl } from 'howler';
 import { generateLightsOutSeed, getTodaySeedNumber, generateRealLightsOutSeed } from '@/app/seedGen.js';
 import { getLocalDateString } from "@/app/seedGen.js";
+import { useTimer } from "@/app/functions";
 
 export default function ClientPage() {
     const { date } = useParams();
@@ -21,14 +20,14 @@ export default function ClientPage() {
     const seed5x5 = generateRealLightsOutSeed(generateLightsOutSeed(5, todaySeed));
     const seed4x4 = generateRealLightsOutSeed(generateLightsOutSeed(4, todaySeed));
 
-    const sounds = {
+    const sounds = useMemo(() => ({
         click: new Howl({ src: ['/assets/click.wav'], volume: 0.875, preload: true }),
         win: new Howl({ src: ['/assets/win.wav'], volume: 0.625, preload: true }),
         reset: new Howl({ src: ['/assets/cardflip.mp3'], volume: 0.75, preload: true }),
         assist: new Howl({ src: ['/assets/assist.mp3'], volume: 0.75, preload: true }),
         toggle: new Howl({ src: ['/assets/toggle.wav'], volume: 0.5, preload: true }),
         uiclick: new Howl({ src: ['/assets/uiclick.wav'], volume: 1.0, preload: true }),
-    };
+    }), []);
 
     function getTodayKey(diff) {
         const puzzleDate = date || getLocalDateString(); // use the URL date if present
@@ -65,16 +64,19 @@ export default function ClientPage() {
         });
         return allStats;
     });
-
-    const [secondsElapsed, setSecondsElapsed] = useState(stats[difficulty].secondsElapsed);
+    const [hasStarted, setHasStarted] = useState(false);
+    const victory = victories[difficulty];
+    const [resetKey, setResetKey] = useState(false);
+    const [secondsElapsed, setSecondsElapsed] = useTimer({
+        hasStarted,
+        victory,
+        resetKey,
+        difficulty,
+        initialSeconds: stats[difficulty].secondsElapsed
+    });
     const [numOfMoves, setNumOfMoves] = useState(stats[difficulty].numOfMoves);
     const [numOfResets, setNumOfResets] = useState(stats[difficulty].numOfResets);
     const [numOfAssists, setNumOfAssists] = useState(stats[difficulty].numOfAssists);
-
-    const victory = victories[difficulty];
-
-    const [resetKey, setResetKey] = useState(false);
-
     const [darkMode, setDarkMode] = useState(false);
     const [onColor, setOnColor] = useState('#4CAF50');
     const [offColor, setOffColor] = useState('#C0C0C0');
@@ -84,8 +86,6 @@ export default function ClientPage() {
         setOnColor(localStorage.getItem('onColor') || '#4CAF50');
         setOffColor(localStorage.getItem('offColor') || '#C0C0C0');
     }, []);
-
-    const [hasStarted, setHasStarted] = useState(false);
 
     useEffect(() => localStorage.setItem('darkMode', darkMode), [darkMode]);
     useEffect(() => localStorage.setItem('onColor', onColor), [onColor]);
@@ -125,9 +125,14 @@ export default function ClientPage() {
     const [animatedCellsReset, setAnimatedCellsReset] = useState([]);
 
     function playSound(name) {
-        if (sounds[name]) {
-            sounds[name].stop();
-            sounds[name].play();
+        const sound = sounds[name];
+        if (!sound) return;
+
+        if (!sound.playing()) {
+            sound.play();
+        } else {
+            const clone = new Howl({ src: sound._src, volume: sound.volume() });
+            clone.play();
         }
     }
 

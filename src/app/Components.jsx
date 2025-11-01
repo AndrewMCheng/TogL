@@ -243,24 +243,16 @@ export function Header({
 
             <div className="left-buttons">
                 <AnimatedButton className="reset-button" aria-label="Reset Game" onClick={() => {
-                    if (numOfResets < 2) {
-                        resetGame();
-                    }
-                    else {
-                        alert("You have reached the maximum number of resets (2) for today");
-                    }
+                    resetGame();
                 }}>
                     <FontAwesomeIcon icon={faRotate} />
                 </AnimatedButton>
                 <AnimatedButton className="assist-button" aria-label="Get Hint" onClick={() => {
                     const assist = getAssist(board);
-                    if (assist && numOfAssists < 5) {
+                    if (assist) {
                         setIsHighlighted(assist.index);
                         setNumOfAssists(numOfAssists + 1);
                         playSound("assist");
-                    }
-                    else {
-                        alert("You have reached the maximum number of assists (5) for today");
                     }
                 }}>
                     <FontAwesomeIcon icon={faLightbulb} />
