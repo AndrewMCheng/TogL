@@ -68,10 +68,9 @@ export function generateRealLightsOutSeed(seed) {
 
 export function getLocalDateString() {
   const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const dd = String(now.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  const offsetMs = now.getTimezoneOffset() * 60000; // convert minutes → ms
+  const local = new Date(now - offsetMs);           // shift to local time
+  return local.toISOString().split("T")[0];         // YYYY-MM-DD
 }
 
 
